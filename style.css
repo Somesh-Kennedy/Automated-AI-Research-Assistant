@@ -1,0 +1,115 @@
+/* Main App Background */
+.stApp {
+    background-color: #f4f7fa;  /* light gray-blue */
+    font-family: "Segoe UI", sans-serif;
+    color: #212121;  /* dark text for readability */
+}
+
+/* Title styling */
+.title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: #003366; /* deep navy blue */
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #444444; /* medium gray */
+    margin-bottom: 30px;
+}
+
+/* Card-like containers */
+.card {
+    background: #ffffff;  /* clean white cards */
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    color: #212121; /* dark text inside cards */
+}
+
+/* Markdown text inside card */
+.card p, .card li, .card span, .card div {
+    color: #212121 !important;
+    line-height: 1.6;
+}
+
+
+/* Button styling */
+.stDownloadButton>button,  /* Download buttons */
+.stButton>button {
+    background-color: #003366;  /* navy blue */
+    color: #ffffff;             /* white text */
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 0.6em 1.2em;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.stDownloadButton>button:hover,
+.stButton>button:hover {
+    background-color: #66ccff;  /* sky blue on hover */
+    color: #000000;             /* black text */
+}
+
+/* Custom info box below title */
+.info-box {
+    background-color: #003366; /* navy background */
+    color: #ffffff;             /* white text */
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border-left: 5px solid #4CAF50; /* green accent */
+}
+
+/* Sidebar tweaks */
+.css-1d391kg, .css-1v0mbdj, .css-18e3th9 {
+    background-color: #ffffff !important; /* white sidebar */
+    color: #212121 !important;            /* dark text */
+}
+
+
+/* Fix for Deploy button in Streamlit toolbar */
+.stAppDeployButton button {
+    background-color: #0d47a1 !important;  /* deep blue background */
+    color: #ffffff !important;             /* white font */
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 4px 12px;
+    transition: all 0.3s ease;
+}
+
+.stAppDeployButton button:hover {
+    background-color: #1976d2 !important;  /* lighter blue on hover */
+    color: #ffffff !important;
+}
+
+/* Force the 3-dot (hamburger) menu icon to white */
+header [data-testid="stToolbar"] svg {
+    fill: #ffffff !important;   /* make the 3 dots white */
+    color: #ffffff !important;  /* fallback */
+}
+
+/* Hover effect for the 3-dot menu */
+header [data-testid="stToolbar"] svg:hover {
+    fill: #f2f2f2 !important;   /* light gray hover */
+    color: #f2f2f2 !important;
+}
+
+
+/* Answer box styling inside right column */
+.answer-box {
+    color: #212121;            /* black text */
+    padding: 15px;
+    border-radius: 12px;
+    line-height: 1.6;
+    margin-top: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    word-wrap: break-word;
+}
+
