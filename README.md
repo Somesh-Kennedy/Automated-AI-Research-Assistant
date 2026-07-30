@@ -1,6 +1,6 @@
 # Automated AI Research Assistant
 
-This project is a Streamlit application that uses **CrewAI** to automate the process of researching a given topic, generating a structured summary based on **arXiv** research papers, and allowing users to ask follow-up questions on the generated summary.
+This project is a Streamlit application that uses **CrewAI** to automate the process of researching a given topic, generating a structured summary based on **arXiv** research articles, and allowing users to ask follow-up questions on the generated summary.
 
 It leverages the power of Large Language Models (LLMs) via the `langchain-google-genai` library (specifically with **Gemini**) and custom tools to create a collaborative team of AI agents for research and summarization.
 
