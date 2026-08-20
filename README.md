@@ -56,7 +56,7 @@ The project requires a Gemini API key for the LLM.
     CREWAI_TRACING_ENABLED=true
 ```
 
-    > **Note:** The `llm` is configured in `agents.py` to use `gemini-2.5-flash-lite`.
+    > **Note:** The `llm` is configured in `agents.py` to use `gemini-2.5-flash-lite`
 
 ### 4. Run the Application
 
