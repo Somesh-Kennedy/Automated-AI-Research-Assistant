@@ -1,6 +1,9 @@
 crewai
-langchain_google_genai
-load_dotenv
 feedparser
-aiohttp
-typing-extensions
+requests
+scikit-learn
+numpy
+pandas
+streamlit
+python-dotenv
+pytest

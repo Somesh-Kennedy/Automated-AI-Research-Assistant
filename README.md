@@ -1,119 +1,44 @@
 # Automated AI Research Assistant
 
-This project is a Streamlit application that uses **CrewAI** to automate the process of researching a given topic, generating a structured summary based on **arXiv** research articles, and allowing users to ask follow-up questions on the generated summary.
+Give it a research topic. It pulls **~100 papers from arXiv**, **clusters them into themes**, and two CrewAI agents turn
+those themes into a structured, referenced summary.
 
-It leverages the power of Large Language Models (LLMs) via the `langchain-google-genai` library (specifically with **Gemini**) and custom tools to create a collaborative team of AI agents for research and summarization.
-
----
-
-## Features
-
-* **Automated Research:** A multi-agent crew (Research Assistant and Research Summarizing Writer) works together to research a topic.
-* **arXiv Integration:** A custom `arxiv_search` tool fetches relevant, up-to-date research papers.
-* **Structured Summaries:** Generates detailed, multi-paragraph research summaries, complete with a references section.
-* **Interactive Q&A:** Allows users to ask follow-up questions directly on the generated summary.
-* **Downloadable Output:** The research summary is available for download as a markdown file.
-* **Streamlit Interface:** A clean and interactive web interface for a smooth user experience.
-
----
-
-## Prerequisites
-
-Before running the application, ensure you have the following installed:
-
-1.  **Python 3.8+**.
-2.  A **Gemini API Key**.
-
----
-
-## Getting Started
-
-### 1. Setup Environment
-
-Clone the repository (assuming you have your project files in a single directory):
-```bash
-# Clone your project repository (if applicable)
-# git clone <your-repo-link>
-# cd automated-ai-research-assistant
+```
+topic ─► arXiv API (paginated, 50 per request, 3 s apart) ─► TF-IDF ─► LSA (10 dims) ─► K-Means (k by silhouette)
+      ─► researcher agent reads the theme overview ─► writer agent drafts the markdown summary + references
 ```
 
-### 2. Install Dependencies
+## What each part does
+- `research_assistant/arxiv_client.py` fetches up to N unique papers: exact-phrase query first (most relevant first), falling
+  back to "all words must appear" if the phrase is rare. De-duplicates across pages and respects arXiv's request spacing.
+- `research_assistant/clustering.py` groups papers into themes. Title and abstract go through TF-IDF, then LSA to remove
+  noise, then K-Means. The number of themes is picked by silhouette score (2 to 8) unless you pass `--k`. Each theme gets
+  its top terms and its most central papers first.
+- `research_assistant/crew.py` is the CrewAI part: a **researcher** with one tool (fetch + cluster) and a **writer** that may
+  cite only papers it was given.
+- `app.py` is a Streamlit front end with a theme scatter plot and a paper list per theme.
 
-Install the required Python packages using the `requirements.txt` file:
+## Run it
 ```bash
+python -m venv .venv && .venv/Scripts/activate        # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 3. Configure API Key
-
-The project requires a Gemini API key for the LLM.
-
-1.  Open the **`.env`** file.
-
-2.  Replace the placeholder with your actual key:
-```ini
-    GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
-    CREWAI_TRACING_ENABLED=true
-```
-
-    > **Note:** The `llm` is configured in `agents.py` to use `gemini-2.5-flash-lite`
-
-### 4. Run the Application
-
-Start the Streamlit application from your terminal:
-```bash
+python -m research_assistant.cli "retrieval augmented generation" --papers 100          # retrieval + clustering, no LLM
+cp .env.example .env     # add a key, then:
+python -m research_assistant.cli "retrieval augmented generation" --papers 100 --summarize
 streamlit run app.py
 ```
+`RESEARCH_LLM_MODEL` can be `groq/<model>` (uses Groq's OpenAI-compatible endpoint, needs `GROQ_API_KEY`) or any provider
+CrewAI supports natively, for example `gemini/gemini-2.5-flash-lite` with `GEMINI_API_KEY`.
 
-This will open the application in your web browser.
+## Verified behaviour
+- 100 unique papers retrieved for "retrieval augmented generation", clustered into 8 themes (silhouette about 0.3). The themes
+  were readable: multi-hop and graph RAG, chunking and context, multimodal RAG, recommendation, similarity search, and others.
+- The full agent run (`openai/gpt-oss-120b` on Groq) produced a referenced markdown summary with one section per theme.
+- `pytest -q`: 12 offline tests (fake arXiv responses and synthetic abstracts; no network or key needed).
 
----
-
-## How to Use
-
-1.  **Enter Topic:** In the sidebar, enter a research topic (e.g., "Augmented Reality in Healthcare").
-2.  **Run Research:** Click the **"Run Research"** button. The CrewAI process will start, and a loading spinner will appear.
-3.  **View Summary:** Once complete, the detailed research summary will appear in the main column.
-4.  **Ask Questions:** Use the **"Ask Questions"** section to query the summary with follow-up questions.
-5.  **Download:** Click **"Download Summary"** to save the output locally.
-6.  **Clear:** Click **"Clear Summary"** to start a new research session.
-
----
-
-## Project Structure
-
-| File | Description |
-| :--- | :--- |
-| `app.py` | The main Streamlit application, handling the UI and `crew.kickoff`. |
-| `crew.py` | Defines the CrewAI **Crew** with the agents and tasks. |
-| `agents.py` | Defines the LLM and the two CrewAI **Agents** (`topic_researcher`, `topic_writer`). |
-| `tasks.py` | Defines the CrewAI **Tasks** for research and writing, including the expected output and file saving. |
-| `tools.py` | Contains the custom **`ArxivSearchTool`** for fetching papers from arXiv. |
-| `requirements.txt` | Lists all necessary Python dependencies. |
-| `style.css` | Custom CSS for the Streamlit application's styling. |
-| `.env` | Environment file for storing the `GEMINI_API_KEY`. |
-
----
-
-## CrewAI Agents and Tasks
-
-### Agents
-
-* **Research Assistant (topic_researcher):**
-    * **Role:** Expert in finding relevant information from research papers.
-    * **Goal:** Research the given topic from research papers, focusing on process, methodology, reasons, and results.
-    * **Tools:** `arxiv_search_tool`
-
-* **Research Summarizing Writer (topic_writer):**
-    * **Role:** Expert in writing detailed, well-structured research summaries.
-    * **Goal:** Write a detailed research summary about the topic, including references.
-    * **Tools:** `arxiv_search_tool` (Used for referencing/validation)
-
-### Tasks
-
-1.  **Research Task:** Delegates the search to the Research Assistant.
-2.  **Write Task:** Delegates the writing to the Research Summarizing Writer.
-    * **Expected Output:** A 5-paragraph detailed research summary formatted as markdown, including a references section.
-    * **Output File:** `research_summary1.md`
-
-The crew is configured to run in **`Process.sequential`** mode, meaning the Research Assistant performs its task first, and then the Research Summarizing Writer uses those findings to complete the writing task.
+## Limitations
+- Silhouette is a rough guide. On one narrow topic the themes overlap, the score is low (0.3 or less) and it tends to rise
+  with k, so treat the number of themes as adjustable (`--k`).
+- Clusters are built from abstracts only, not full text. arXiv search is keyword based, so a few loosely related papers get in.
+- The writer agent can over-interpret a paper that does not really belong to its theme. Check the references.
+- arXiv rate limits apply; 100 papers take about two requests plus a pause.
